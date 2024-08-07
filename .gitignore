@@ -17,3 +17,6 @@ venv/
 # Dependency directories
 venv/
 node_modules/
+
+# Database files
+**/db.sqlite3
