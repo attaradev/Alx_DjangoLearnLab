@@ -1,3 +1,5 @@
+from django.http import HttpResponseForbidden
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect
 from django.views.generic.detail import DetailView
 from .models import Library, Book
@@ -27,8 +29,38 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            # Redirect to a view after successful login
             return redirect('library-list')
     else:
         form = UserCreationForm()
     return render(request, 'relationship_app/register.html', {'form': form})
+
+
+def is_admin(user):
+    return user.userprofile.role == 'Admin'
+
+
+def is_librarian(user):
+    return user.userprofile.role == 'Librarian'
+
+
+def is_member(user):
+    return user.userprofile.role == 'Member'
+
+
+@user_passes_test(is_admin)
+def admin_view(request):
+    return render(request, 'relationship_app/admin_view.html')
+
+
+@user_passes_test(is_librarian)
+def librarian_view(request):
+    return render(request, 'relationship_app/librarian_view.html')
+
+
+@user_passes_test(is_member)
+def member_view(request):
+    return render(request, 'relationship_app/member_view.html')
+
+
+def forbidden_view(request):
+    return HttpResponseForbidden("You do not have permission to access this page.")
