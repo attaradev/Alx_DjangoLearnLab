@@ -5,12 +5,12 @@ from .models import Book, Library
 
 def book_list_view(request):
     books = Book.objects.all()
-    return render(request, 'book_list.html', {'books': books})
+    return render(request, 'relationship_app/book_list.html', {'books': books})
 
 
 class BookListView(ListView):
     model = Book
-    template_name = 'book_list.html'
+    template_name = 'relationship_app/book_list.html'
     context_object_name = 'books'
 
 
