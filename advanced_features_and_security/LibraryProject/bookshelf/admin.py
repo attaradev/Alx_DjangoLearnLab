@@ -11,7 +11,6 @@ class BookAdmin(admin.ModelAdmin):
     list_filter = ('publication_year',)
 
 
-@admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
 
@@ -30,3 +29,6 @@ class CustomUserAdmin(UserAdmin):
 
     search_fields = ('username', 'email')
     ordering = ('username',)
+
+
+admin.site.register(CustomUser, CustomUserAdmin)
