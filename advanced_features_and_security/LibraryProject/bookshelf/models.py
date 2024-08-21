@@ -10,8 +10,6 @@ class Book(models.Model):
     def __str__(self):
         return f"{self.title} by {self.author} ({self.publication_year})"
 
-    from django.contrib.auth.models import BaseUserManager
-
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, date_of_birth=None, profile_photo=None, password=None, **extra_fields):
