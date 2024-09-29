@@ -65,7 +65,7 @@ class PostListView(ListView):
 
         if query:
             # Filter by title, tags, or content
-            queryset = queryset.filter(
+            queryset = Post.objects.filter(
                 Q(title__icontains=query) |
                 Q(tags__name__icontains=query) |
                 Q(content__icontains=query)
