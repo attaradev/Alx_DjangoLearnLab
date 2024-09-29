@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'password', 'bio', 'profile_picture')
 
     def create(self, validated_data):
-        user = User(**validated_data)
+        user = get_user_model().objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         Token.objects.create(user=user)  # Create token for the new user
