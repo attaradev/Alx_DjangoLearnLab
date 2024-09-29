@@ -6,15 +6,18 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.db.models import Q
 from .models import CustomUser, Post, Comment
 from .forms import ProfileForm, CreatePostForm, CommentForm
 
+
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField()
-    
+
     class Meta:
         model = CustomUser
         fields = ['email',]
+
 
 def register(request):
     if request.method == 'POST':
@@ -25,9 +28,11 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'register.html', {'form': form})
-    
+
+
 class LoginView(LoginView):
     template_name = 'login.html'
+
 
 @login_required
 def edit_profile(request):
@@ -41,19 +46,39 @@ def edit_profile(request):
     return render(request, 'edit_profile.html', {'form': form})
 
 
-
 @login_required
 def profile(request):
     return render(request, 'profile.html', {'user': request.user})
 
-class ListView(ListView):
+
+class PostListView(ListView):
     model = Post
     template_name = 'post_list.html'
+    context_object_name = 'posts'
+    paginate_by = 10  # Optional, for pagination if you want
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Get the search query from the request
+        query = self.request.GET.get('q')
+
+        if query:
+            # Filter by title, tags, or content
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(tags__name__icontains=query) |
+                Q(content__icontains=query)
+            ).distinct()
+
+        return queryset
+
 
 class DetailView(DetailView):
     model = Post
     template_name = 'post_view.html'
     context_object_name = 'post'
+
 
 class CreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -64,11 +89,12 @@ class CreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
-    
+
 
 class UpdateView(UpdateView):
     model = Post
     template_name = 'post_edit.html'
+
 
 class DeleteView(UserPassesTestMixin, DeleteView):
     model = Post
@@ -80,6 +106,7 @@ class DeleteView(UserPassesTestMixin, DeleteView):
         post = self.get_object()
         return post.author == self.request.user
 
+
 class CommentCreateView(CreateView):
     model = Comment
     template_name = 'comment_create.html'
@@ -89,9 +116,11 @@ class CommentCreateView(CreateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
+
 class CommentUpdateView(UpdateView):
     model = Comment
     template_name = "comment_update.html"
+
 
 class CommentDeleteView(DeleteView):
     model = Comment
