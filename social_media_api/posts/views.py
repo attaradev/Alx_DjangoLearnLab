@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, generics
 from django_filters.rest_framework import FilterSet, filters
 from django.contrib.auth import get_user_model
-from notifications.utils import create_notification
+from notifications.models import Notification
 from .models import Like, Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
@@ -69,22 +69,34 @@ class LikePostView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        post = Post.objects.get(pk=pk)
+        # Safely get the post or return 404 if not found
+        post = generics.get_object_or_404(Post, pk=pk)
+
+        # Attempt to get or create a like instance
         like, created = Like.objects.get_or_create(
             user=request.user, post=post)
 
         if created:
-            create_notification(request.user, 'liked', post)
+            # If a like was successfully created, generate a notification
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb='liked',
+                target=post
+            )
             return Response({'message': 'Post liked'}, status=status.HTTP_201_CREATED)
-        return Response({'message': 'You already liked this post'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'You have already liked this post'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UnlikePostView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        post = Post.objects.get(pk=pk)
+        # Safely get the post or return 404 if not found
+        post = generics.get_object_or_404(Post, pk=pk)
+
         try:
+            # Attempt to get the like instance and delete it
             like = Like.objects.get(user=request.user, post=post)
             like.delete()
             return Response({'message': 'Post unliked'}, status=status.HTTP_204_NO_CONTENT)
