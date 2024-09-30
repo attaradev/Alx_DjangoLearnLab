@@ -1,7 +1,4 @@
-from rest_framework.views import APIView
 from rest_framework import generics, status, permissions
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import viewsets
@@ -9,7 +6,7 @@ from .models import CustomUser
 from .serializers import UserSerializer, LoginSerializer
 
 
-class RegisterView(APIView):
+class RegisterView(generics.GenericAPIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -18,7 +15,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginView(APIView):
+class LoginView(generics.GenericAPIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
