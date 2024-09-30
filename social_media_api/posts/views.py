@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, status, generics
@@ -70,9 +71,9 @@ class LikePostView(APIView):
 
     def post(self, request, pk):
         # Safely get the post or return 404 if not found
-        post = generics.get_object_or_404(Post, pk=pk)
+        post = get_object_or_404(Post, pk=pk)
 
-        # Attempt to get or create a like instance
+        # Use Like.objects.get_or_create to handle liking the post
         like, created = Like.objects.get_or_create(
             user=request.user, post=post)
 
@@ -85,7 +86,8 @@ class LikePostView(APIView):
                 target=post
             )
             return Response({'message': 'Post liked'}, status=status.HTTP_201_CREATED)
-        return Response({'message': 'You have already liked this post'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'message': 'You have already liked this post'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UnlikePostView(APIView):
@@ -93,7 +95,7 @@ class UnlikePostView(APIView):
 
     def post(self, request, pk):
         # Safely get the post or return 404 if not found
-        post = generics.get_object_or_404(Post, pk=pk)
+        post = get_object_or_404(Post, pk=pk)
 
         try:
             # Attempt to get the like instance and delete it
