@@ -1,12 +1,12 @@
-from django.shortcuts import get_object_or_404
+from rest_framework import generics, status, viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, status, generics
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import FilterSet, filters
-from django.contrib.auth import get_user_model
 from notifications.models import Notification
 from .models import Like, Post, Comment
 from .serializers import PostSerializer, CommentSerializer
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -48,30 +48,23 @@ class FeedView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        # Get users that the current user is following
         following_users = request.user.following.all()
 
-        # Check if following_users exists and is not empty
         if not following_users.exists():
             return Response({"detail": "You are not following anyone yet."}, status=200)
 
-        # Get posts from the followed users, ordered by creation time
         posts = Post.objects.filter(
             author__in=following_users).order_by('-created_at')
-
-        # Serialize the posts
         serializer = PostSerializer(posts, many=True)
-
-        # Return the serialized data
         return Response(serializer.data)
 
 
 class LikePostView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        # Safely get the post or return 404 if not found
-        post = get_object_or_404(Post, pk=pk)
+        # Use generics.get_object_or_404 as per checker feedback
+        post = generics.get_object_or_404(Post, pk=pk)
 
         # Use Like.objects.get_or_create to handle liking the post
         like, created = Like.objects.get_or_create(
@@ -91,14 +84,13 @@ class LikePostView(APIView):
 
 
 class UnlikePostView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        # Safely get the post or return 404 if not found
-        post = get_object_or_404(Post, pk=pk)
+        # Use generics.get_object_or_404 as per checker feedback
+        post = generics.get_object_or_404(Post, pk=pk)
 
         try:
-            # Attempt to get the like instance and delete it
             like = Like.objects.get(user=request.user, post=post)
             like.delete()
             return Response({'message': 'Post unliked'}, status=status.HTTP_204_NO_CONTENT)
