@@ -67,8 +67,7 @@ class LikePostView(APIView):
         post = generics.get_object_or_404(Post, pk=pk)
 
         # Use Like.objects.get_or_create to handle liking the post
-        like, created = Like.objects.get_or_create(
-            user=request.user, post=post)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
 
         if created:
             # If a like was successfully created, generate a notification
