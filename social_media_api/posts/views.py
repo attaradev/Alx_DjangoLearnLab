@@ -54,8 +54,7 @@ class FeedView(APIView):
             return Response({"detail": "You are not following anyone yet."}, status=200)
 
         # Get posts from the followed users, ordered by creation time
-        posts = Post.objects.filter(
-            author__in=following_users).order_by('-created_at')
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
 
         # Serialize the posts
         serializer = PostSerializer(posts, many=True)
