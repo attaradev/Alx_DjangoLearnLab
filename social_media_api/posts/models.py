@@ -30,10 +30,11 @@ class Comment(models.Model):
 class Like(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
-    # Assuming you have a Post model
-    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Ensure a user can only like a post once
         unique_together = ('user', 'post')
+
+    def __str__(self):
+        return f"{self.user} liked {self.post.title}"
